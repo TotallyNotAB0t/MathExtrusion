@@ -27,6 +27,7 @@ namespace Ge
 		void setFar(float far);
 		void setPriority(int p);
 		void setOrtho(bool state);
+		void setOrthoSize(float size);		
 		float getFieldOfView();
 		float getNear();
 		float getFar();
@@ -37,6 +38,7 @@ namespace Ge
 		glm::mat4 getProjectionMatrix() const;
 		void onGUI() override;
 		VkBuffer getUniformBuffer();
+		glm::vec2 ScreenToSpace(const glm::vec2& mouseCoords, const glm::vec2& screenSize);
 	protected:
 		VulkanMisc * vulkanM;
 		UniformBufferCamera m_uniformBufferCamera;

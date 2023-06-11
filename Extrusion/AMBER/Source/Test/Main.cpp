@@ -1,18 +1,22 @@
 
 #include <iostream>
 #include "GameEngine.hpp"
-
+#include "ExtrusionScene.hpp"
 using namespace Ge;
 
 int main()
 {
 	Debug::Info("Moteur Graphique");	
 	GameEngine engine;	
-	ptrClass e = engine.getPtrClass();	
-	e.settingManager->setName("VirtualCreature");
-	e.settingManager->setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	e.settingManager->setWindowHeight(991);
-	e.settingManager->setWindowWidth(1920);
+	ptrClass pc = engine.getPtrClass();	
+	pc.settingManager->setName("Extrusion");
+	pc.settingManager->setClearColor(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	pc.settingManager->setWindowHeight(991);
+	pc.settingManager->setWindowWidth(1920);
+
+	ExtrusionScene es;
+	
+	pc.sceneManager->addScene("ExtrusionScene", &es);
 
 	if (!engine.initialize())
 	{

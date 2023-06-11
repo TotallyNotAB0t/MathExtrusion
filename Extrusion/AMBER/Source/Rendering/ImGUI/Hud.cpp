@@ -7,9 +7,9 @@ namespace Ge
 {
 	Hud::Hud()
 	{		
-		//m_imguiBlock.push_back(&m_engineInfo);
-		//m_imguiBlock.push_back(&m_console);
-		//m_imguiBlock.push_back(&m_hiearchy);
+		m_imguiBlock.push_back(&m_engineInfo);
+		m_imguiBlock.push_back(&m_console);
+		m_imguiBlock.push_back(&m_hiearchy);
 	}
 
 	bool Hud::initialize(VulkanMisc* vM)

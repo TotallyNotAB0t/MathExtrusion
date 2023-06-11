@@ -50,9 +50,9 @@ namespace Ge
 
     void Descriptor::updateCount(VulkanMisc *vM, int count, std::vector<VkDescriptorBufferInfo> bufferInfo)
     {
+        vkQueueWaitIdle(vulkanM->str_VulkanDeviceMisc->str_graphicsQueue);
         if(m_count != count)
-        {
-            vkQueueWaitIdle(vulkanM->str_VulkanDeviceMisc->str_graphicsQueue);
+        {            
             destroyVkDescriptorPool(vulkanM,m_DescriptorPool);
             destroyVkVkDescriptorSetLayout(vulkanM,m_DescriptorSetLayout);
             m_DescriptorSetLayout = createVkDescriptorSetLayout(vM,count,m_descriptorType, m_countDescriptor);
@@ -74,9 +74,9 @@ namespace Ge
 
     void Descriptor::updateCount(VulkanMisc *vM, int count, std::vector<VkDescriptorImageInfo> bufferInfo)
     {
+        vkQueueWaitIdle(vulkanM->str_VulkanDeviceMisc->str_graphicsQueue);
         if(m_count != count)
-        {
-            vkQueueWaitIdle(vulkanM->str_VulkanDeviceMisc->str_graphicsQueue);
+        {            
             destroyVkDescriptorPool(vulkanM,m_DescriptorPool);
             destroyVkVkDescriptorSetLayout(vulkanM,m_DescriptorSetLayout);
             m_DescriptorSetLayout = createVkDescriptorSetLayout(vM,count,m_descriptorType, m_countDescriptor);

@@ -28,9 +28,9 @@ namespace Ge
 		m_graphiquePipeline.clear();
 	}
 
-	GraphiquePipeline * GraphiquePipelineManager::createPipeline(const std::string &frag, const std::string &vert,bool back,bool multiS)
+	GraphiquePipeline * GraphiquePipelineManager::createPipeline(const std::string &frag, const std::string &vert,bool back,bool multiS, bool transparency)
 	{
-		ShaderPair * sp = new ShaderPair(frag, vert, back,multiS);
+		ShaderPair * sp = new ShaderPair(frag, vert, back,multiS, transparency);
 		GraphiquePipeline * gp = new GraphiquePipeline(vulkanM, sp);
 		m_graphiquePipeline.push_back(gp);				
 		return gp;

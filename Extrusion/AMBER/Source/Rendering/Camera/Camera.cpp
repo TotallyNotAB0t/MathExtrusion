@@ -63,6 +63,17 @@ namespace Ge
 		BufferManager::unMapMemory(m_vmaUniformBuffer);
 	}
 
+	glm::vec2 Camera::ScreenToSpace(const glm::vec2& mouseCoords, const glm::vec2& screenSize)
+	{
+		glm::mat4 projectionMatrix = getProjectionMatrix();
+
+		glm::vec2 normalizedMouseCoords = (2.0f * mouseCoords) / screenSize - glm::vec2(1.0f, 1.0f);
+		normalizedMouseCoords.y = -normalizedMouseCoords.y;
+
+		glm::vec4 worldCoords = glm::inverse(projectionMatrix) * glm::vec4(normalizedMouseCoords, 0.0f, 1.0f);
+		return glm::vec2(worldCoords.x, worldCoords.y);
+	}
+
 	VkBuffer Camera::getUniformBuffer()
 	{
 		return m_vmaUniformBuffer.buffer;
@@ -95,6 +106,12 @@ namespace Ge
 	void Camera::setOrtho(bool state)
 	{
 		m_ortho = state;
+		mapMemory();
+	}
+
+	void Camera::setOrthoSize(float size)
+	{
+		m_orthoSize = size;
 		mapMemory();
 	}
 
