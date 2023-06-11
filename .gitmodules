@@ -1,0 +1,15 @@
+[submodule "CapsEngine/ThirdParty/termcolor"]
+	path = CapsEngine/ThirdParty/termcolor
+	url = https://github.com/ikalnytskyi/termcolor.git
+[submodule "CapsEngine/ThirdParty/tinyobjloader"]
+	path = CapsEngine/ThirdParty/tinyobjloader
+	url = https://github.com/tinyobjloader/tinyobjloader.git
+[submodule "CapsEngine/ThirdParty/stb-cmake"]
+	path = CapsEngine/ThirdParty/stb-cmake
+	url = https://github.com/jschmidt42/stb-cmake.git
+[submodule "CapsEngine/ThirdParty/glm"]
+	path = CapsEngine/ThirdParty/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "CapsEngine/ThirdParty/openal-soft"]
+	path = CapsEngine/ThirdParty/openal-soft
+	url = https://github.com/kcat/openal-soft.git
