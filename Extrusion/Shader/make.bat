@@ -10,6 +10,8 @@
 "%VULKAN_SDK%\Bin\glslc.exe" shader_mirror.frag -o mirror_fs.spv
 "%VULKAN_SDK%\Bin\glslc.exe" iso_unlit.vert -o vert_iso_unlit.spv
 "%VULKAN_SDK%\Bin\glslc.exe" iso_unlit.frag -o frag_iso_unlit.spv
+"%VULKAN_SDK%\Bin\glslc.exe" wave_unlit.vert -o vert_wave_unlit.spv
+"%VULKAN_SDK%\Bin\glslc.exe" wave_unlit.frag -o frag_wave_unlit.spv
 "%VULKAN_SDK%\Bin\glslc.exe" compute_shader.comp -o compute_shader.comp.spv
 pause
 

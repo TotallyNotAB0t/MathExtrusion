@@ -14,6 +14,8 @@ void ExtrusionScene::load()
 	mat->setRoughness(0.2f);
 	mat->setAlbedoTexture(t);
 	mat->setMetallicTexture(t);
+	mat->setTilling(glm::vec2(5.0f,5.0f));
+	plane->setPosition(glm::vec3(0.0f, -1.0f, 0.0f));
 	plane->setScale(glm::vec3(10.0f,1.0f,10.0f));
 	plane->setMaterial(mat);
 

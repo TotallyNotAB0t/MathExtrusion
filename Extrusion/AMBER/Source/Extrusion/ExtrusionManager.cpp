@@ -43,6 +43,39 @@ std::vector<glm::vec2> ExtrusionManager::DeCasteljau(Courbe courbe)
 	return curvePoints;
 }
 
+void ExtrusionManager::updateCourbe(int i)
+{
+	std::vector<glm::vec2> data;
+	if (m_courbes[i].courbetype == CourbeType::DeCasteljau)
+	{
+		data = DeCasteljau(m_courbes[i]);
+	}
+	else
+	{
+		data = trianglePascal(m_courbes[i]);
+	}
+
+	glm::vec2 pos;
+	for (int j = 0; j < m_courbes[i].points.size(); j++)
+	{		
+		pos = m_courbes[i].cloudPoint[j];
+		m_courbes[i].points[j]->setPosition(glm::vec3(pos.x,0.0f, pos.y));
+		m_courbes[i].light[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+	}
+
+	for (int j = 0; j < m_courbes[i].segments.size(); j++)
+	{
+		glm::vec2 p1 = data[j];
+		glm::vec2 p2 = data[j+1];
+		glm::vec2 pos = (p1 + p2) / 2.0f;
+		float scale = glm::distance(p1, p2) / 2.0f;
+		m_courbes[i].segments[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+		m_courbes[i].segments[j]->setScale(glm::vec3(scale, m_size, m_size));
+		glm::vec2 direction = p2 - p1;
+		m_courbes[i].segments[j]->setEulerAngles(directionToRotation(glm::vec3(direction.x, 0.0f, direction.y)));
+	}
+}
+
 std::vector<glm::vec2> ExtrusionManager::trianglePascal(Courbe courbe)
 {
 	std::vector<glm::vec2> curvePoints;
@@ -104,7 +137,7 @@ Model* ExtrusionManager::createSegment(glm::vec2 p1, glm::vec2 p2)
 	Model* m = m_pc.modelManager->createModel(m_sb);
 	m->setMaterial(m_segmentMat);
 	m->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
-	m->setScale(glm::vec3(scale, 0.1f, 0.1f));
+	m->setScale(glm::vec3(scale, m_size, m_size));
 	glm::vec2 direction = p2-p1;
 	m->setEulerAngles(directionToRotation(glm::vec3(direction.x,0.0f, direction.y)));
 	return m;
@@ -121,21 +154,102 @@ void ExtrusionManager::start()
     m_cam2D->setOrthoSize(15.0f);
 
     m_sb = m_pc.modelManager->allocateBuffer("../Model/cube.obj");
+	GraphiquePipeline* gp = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_wave_unlit.spv", "../Shader/vert_wave_unlit.spv");
+	GraphiquePipeline* gp_unlit = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_unlit.spv", "../Shader/vert_unlit.spv");
+
 
     m_pointMat = m_pc.materialManager->createMaterial();
     m_pointMat->setColor(glm::vec3(0.0f, 0.0f, 1.0f));
     m_pointMat->setMetallic(0.7f);
     m_pointMat->setRoughness(0.15f);
+	m_pointMat->setPipeline(gp_unlit);
 
     m_segmentMat = m_pc.materialManager->createMaterial();      
     m_segmentMat->setColor(glm::vec3(1.0f, 0.0f, 0.0f));
     m_segmentMat->setMetallic(0.7f);
     m_segmentMat->setRoughness(0.15f);
+	m_segmentMat->setPipeline(gp);
+
+
+	//allocateBuffer(float * pos, float * texCord, float * normal, unsigned int * indice, unsigned vertexSize, unsigned indiceSize)
+/*float* pos = new float[4 * 3];
+unsigned int* indice = new unsigned int[6];
+float* texCord = new float[4*2];
+float* normal = new float[4 * 3];*/
+
+	/*float pos[] = {0.0f,0.0f,0.0f, 0.0f,0.0f,1.0f, 1.0f,0.0f,1.0f, 1.0f,0.0f,0.0f};
+	unsigned int indice[] = { 0,1,2,  0,2,3 };
+	float texCord[] = { 0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f };
+	float normal[] = { 0.0f,1.0f,0.0f, 0.0f,1.0f,0.0f, 0.0f,1.0f,0.0f, 0.0f,1.0f,0.0f };
+
+	ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCord, normal, indice, 4, 6);
+	Model* modellqsdpf = m_pc.modelManager->createModel(sbb);
+	modellqsdpf->setPosition(glm::vec3(0.0f, -0.5f, 0.0f));*/
 }
 
 void ExtrusionManager::fixedUpdate()
 {
 
+}
+
+
+std::vector<glm::vec3> generateExtrusionPoints(const std::vector<glm::vec2>& bezierPoints, float height, float scaleFactor) 
+{
+	std::vector<glm::vec3> extrusionPoints;
+
+	for (const auto& point : bezierPoints) {
+		glm::vec3 bottomPoint(point.x, 0.0f, point.y);
+		glm::vec3 topPoint(point.x * scaleFactor, height, point.y * scaleFactor);
+
+		extrusionPoints.push_back(bottomPoint);
+		extrusionPoints.push_back(topPoint);
+	}
+
+	return extrusionPoints;
+}
+
+void generateExtrusionData(const std::vector<glm::vec3>& extrusionPoints, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals) 
+{
+	size_t numPoints = extrusionPoints.size();
+
+	for (size_t i = 0; i < numPoints; i += 2) 
+	{
+		size_t bottomIndex = i;
+		size_t topIndex = i + 1;
+		size_t nextBottomIndex = (i + 2) % numPoints;
+		size_t nextTopIndex = (i + 3) % numPoints;
+
+		// Indices
+		indices.push_back(bottomIndex);
+		indices.push_back(topIndex);
+		indices.push_back(nextTopIndex);
+
+		indices.push_back(bottomIndex);
+		indices.push_back(nextTopIndex);
+		indices.push_back(nextBottomIndex);
+
+		// Texture coordinates
+		float texCoordX = static_cast<float>(i) / static_cast<float>(numPoints);
+		float nextTexCoordX = static_cast<float>(i + 2) / static_cast<float>(numPoints);
+
+		texCoords.push_back(texCoordX);
+		texCoords.push_back(0.0f);
+
+		texCoords.push_back(texCoordX);
+		texCoords.push_back(1.0f);
+
+		// Normals
+		glm::vec3 edge1 = extrusionPoints[nextBottomIndex] - extrusionPoints[bottomIndex];
+		glm::vec3 edge2 = extrusionPoints[topIndex] - extrusionPoints[bottomIndex];
+		glm::vec3 normal = glm::normalize(glm::cross(edge2, edge1));
+
+		for (int j = 0; j < 2; ++j) 
+		{
+			normals.push_back(normal.x);
+			normals.push_back(normal.y);
+			normals.push_back(normal.z);
+		}
+	}
 }
 
 void ExtrusionManager::update()
@@ -154,8 +268,10 @@ void ExtrusionManager::update()
 		for (int i = 0; i < m_points_clouds.size(); i++)
 		{			
 			m_pc.modelManager->destroyModel(m_points_clouds[i]);
-		}
+			m_pc.lightManager->destroyLight(m_points_light_clouds[i]);
+		}		
 		m_points_clouds.clear();
+		m_points_light_clouds.clear();
 	}
     if (m_cloudPoint && !m_priority && !m_isMouseOverUI)
     {        
@@ -163,15 +279,19 @@ void ExtrusionManager::update()
         {
             if (m_cloudButton)
             {
-                Model * m = m_pc.modelManager->createModel(m_sb);
+                Model * m = m_pc.modelManager->createModel(m_sb);				
                 m->setMaterial(m_pointMat);
-                m->setScale(glm::vec3(0.1f));				
+                m->setScale(glm::vec3(m_size));				
                 glm::vec2 mp = glm::vec2(m_pc.inputManager->getMousePosX(), m_pc.inputManager->getMousePosY());
                 glm::vec2 ss = glm::vec2(m_pc.settingManager->getWindowWidth(), m_pc.settingManager->getWindowHeight());
                 glm::vec2 pos = m_cam2D->ScreenToSpace(mp, ss);
                 m->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
 				m_points_clouds.push_back(m);
                 m_cloudButton = false;
+				PointLight* pl = m_pc.lightManager->createPointLight(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+				pl->setRange(1.0f);
+				pl->setPosition(m->getPosition());
+				m_points_light_clouds.push_back(pl);
             }
         }
         else
@@ -187,18 +307,20 @@ void ExtrusionManager::update()
 		std::vector<int> coef;
 		std::vector<Model*> model;
 		std::vector<Model*> segement;
+		std::vector<PointLight*> plight;
 		for (int i = 0; i < m_points_clouds.size(); i++)
 		{
 			glm::vec3 pos = m_points_clouds[i]->getPosition();
 			cp.push_back(glm::vec2(pos.x, pos.z));
 			coef.push_back(1);
 			model.push_back(m_points_clouds[i]);
+			plight.push_back(m_points_light_clouds[i]);
 		}
 		c.cloudPoint = cp;
 		c.coefControl = coef;
 		c.pas = 50;
 		c.points = model;
-
+		c.light = plight;
 		std::vector<glm::vec2> data = trianglePascal(c);
 		for (int i = 0; i < data.size()-1; i++)
 		{
@@ -206,6 +328,9 @@ void ExtrusionManager::update()
 		}
 		c.segments = segement;
 		m_points_clouds.clear();
+		m_points_light_clouds.clear();
+		c.courbetype = CourbeType::TriangleDePascal;
+		m_courbes.push_back(c);		
 	}
 	if (m_decastelJau)
 	{
@@ -224,6 +349,8 @@ void ExtrusionManager::update()
 		c.cloudPoint = cp;
 		c.coefControl = coef;
 		c.pas = 50;
+		c.height = 5.0f;
+		c.scale = 1.0f;
 		c.points = model;
 
 		std::vector<glm::vec2> data = DeCasteljau(c);
@@ -233,7 +360,123 @@ void ExtrusionManager::update()
 		}
 		c.segments = segement;
 		m_points_clouds.clear();
+		c.courbetype = CourbeType::DeCasteljau;
+		m_courbes.push_back(c);
 		m_decastelJau = false;
+	}
+
+	if (m_erase)
+	{		
+		Courbe c = m_courbes[m_listboxCurrentItem];
+		std::vector<Model*> segements = c.segments;
+		std::vector<Model*> points = c.points;
+		std::vector<PointLight*> light = c.light;
+		for (int i = 0; i < segements.size(); i++)
+		{
+			m_pc.modelManager->destroyModel(segements[i]);
+		}
+		c.segments.clear();
+		for (int i = 0; i < points.size(); i++)
+		{
+			m_pc.modelManager->destroyModel(points[i]);
+			m_pc.lightManager->destroyLight(light[i]);
+		}
+		m_points_clouds.clear();
+		m_points_light_clouds.clear();
+		c.points.clear();
+		m_courbes.erase(m_courbes.begin()+m_listboxCurrentItem);
+		m_erase = false;
+	}
+	if (m_pc.inputManager->getMouse(0) && !m_isMouseOverUI)
+	{
+		glm::vec2 mp = glm::vec2(m_pc.inputManager->getMousePosX(), m_pc.inputManager->getMousePosY());
+		glm::vec2 ss = glm::vec2(m_pc.settingManager->getWindowWidth(), m_pc.settingManager->getWindowHeight());
+		glm::vec2 pos = m_cam2D->ScreenToSpace(mp, ss);
+		if (m_control_point < 0)
+		{
+			for (int i = 0; i < m_courbes.size(); i++)
+			{
+				for (int j = 0; j < m_courbes[i].cloudPoint.size(); j++)
+				{
+					if (glm::distance(m_courbes[i].cloudPoint[j], pos) < m_size*4.0f)
+					{
+						m_control_point = i;
+						m_courbe_point = j;
+					}
+				}
+			}
+		}
+		else
+		{
+			m_courbes[m_control_point].cloudPoint[m_courbe_point] = pos;
+			updateCourbe(m_control_point);
+		}
+	}
+	else
+	{
+		m_control_point = -1;
+	}
+
+	if (m_extrusion)
+	{
+		m_extrusion = false;
+
+		Courbe c = m_courbes[m_listboxCurrentItem];
+
+		std::vector<glm::vec2> data;
+		if (c.courbetype == CourbeType::DeCasteljau)
+		{
+			data = DeCasteljau(c);
+		}
+		else
+		{
+			data = trianglePascal(c);
+		}
+
+
+		std::vector<glm::vec3> extrusionPoints = generateExtrusionPoints(data, c.height, c.scale);
+
+		std::vector<unsigned int> indices;
+		std::vector<float> texCoords;
+		std::vector<float> normals;
+
+		generateExtrusionData(extrusionPoints, indices, texCoords, normals);
+
+		float* pos = new float[extrusionPoints.size() * 3];
+		for (size_t i = 0; i < extrusionPoints.size(); ++i) {
+			pos[i * 3] = extrusionPoints[i].x;
+			pos[i * 3 + 1] = extrusionPoints[i].y;
+			pos[i * 3 + 2] = extrusionPoints[i].z;
+		}
+
+		ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCoords.data(), normals.data(), indices.data(), extrusionPoints.size(), indices.size());
+		Model* m = m_pc.modelManager->createModel(sbb);
+		Materials* mat = m_pc.materialManager->createMaterial();
+		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png",false));
+		m->setMaterial(mat);
+	}
+
+	if (m_pas)
+	{		
+		for (int i = 0; i < m_courbes[m_listboxCurrentItem].segments.size(); i++)
+		{
+			m_pc.modelManager->destroyModel(m_courbes[m_listboxCurrentItem].segments[i]);
+		}
+		m_courbes[m_listboxCurrentItem].segments.clear();
+		std::vector<glm::vec2> data;
+		if (m_courbes[m_listboxCurrentItem].courbetype == CourbeType::DeCasteljau)
+		{
+			data = DeCasteljau(m_courbes[m_listboxCurrentItem]);
+		}
+		else
+		{
+			data = trianglePascal(m_courbes[m_listboxCurrentItem]);
+		}
+		for (int i = 0; i < data.size() - 1; i++)
+		{
+			m_courbes[m_listboxCurrentItem].segments.push_back(createSegment(data[i], data[i + 1]));
+		}
+		m_pas = false;
 	}
 }
 
@@ -279,12 +522,81 @@ void ExtrusionManager::render(VulkanMisc* vM)
         }
 		if (ImGui::Button("Triangle de Pascal"))
 		{
+			m_cloudPoint = false;
 			m_triangleDePascale = m_points_clouds.size() >= 3 && !m_cloudPoint;
 		}
 		if (ImGui::Button("DeCasteljau"))
 		{
+			m_cloudPoint = false;
 			m_decastelJau = m_points_clouds.size() >= 3 && !m_cloudPoint;
 		}
+		cnames.clear();
+		valueS.clear();
+		for (size_t i = 0; i < m_courbes.size(); ++i)
+		{
+			valueS.push_back(("Courbe " + std::to_string(i)));
+			cnames.push_back(valueS[i].c_str());
+		}
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Bezier list");
+		ImGui::PushItemWidth(m_pc.settingManager->getWindowWidth() / 7.0f);
+		ImGui::ListBox("###Hierarchy", &m_listboxCurrentItem, cnames.data(), cnames.size(), 5);
+		ImGui::PopItemWidth();
+		ImGui::TextColored(ImVec4(0.2f, 1, 0.2f, 1), "Inspector\n\n");
+		if (cnames.size() > 0)
+		{
+			ImGui::BeginChild("");
+			if (m_courbes.size() > m_listboxCurrentItem)
+			{				
+				switch (m_courbes[m_listboxCurrentItem].courbetype)
+				{
+				case CourbeType::TriangleDePascal:
+					ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "TriangleDePascal");
+					break;
+				case CourbeType::DeCasteljau:
+					ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "DeCasteljau");
+					break;
+				default:
+					break;
+				};
+
+				if (ImGui::InputInt("Pas", &(m_courbes[m_listboxCurrentItem].pas), 1, 2))
+				{
+					if (m_courbes[m_listboxCurrentItem].pas <= 0)
+					{
+						m_courbes[m_listboxCurrentItem].pas = 1;
+					}
+					m_pas = true;
+				}	
+
+				if (ImGui::InputFloat("Height", &(m_courbes[m_listboxCurrentItem].height), 0.25f, 2.0f))
+				{
+					if (m_courbes[m_listboxCurrentItem].height <= 0)
+					{
+						m_courbes[m_listboxCurrentItem].height = 1;
+					}
+				}
+
+				if (ImGui::InputFloat("ScaleFactor", &(m_courbes[m_listboxCurrentItem].scale), 0.25f, 2.0f))
+				{
+					if (m_courbes[m_listboxCurrentItem].scale <= 0)
+					{
+						m_courbes[m_listboxCurrentItem].scale = 1;
+					}
+				}
+
+				if (ImGui::Button("Extrusion Simple"))
+				{
+					m_extrusion = true;
+				}
+
+				if (ImGui::Button("Supprimer"))
+				{
+					m_erase = true;
+				}
+			}
+			ImGui::EndChild();
+		}
+		ImGui::Spacing();
     }
     ImGui::End();
 }
