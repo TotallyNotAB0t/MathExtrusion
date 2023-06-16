@@ -1,0 +1,664 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						24
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "ThirdParty",
+					"childIndexes" : 
+					[
+						2,
+						4,
+						5,
+						6,
+						7,
+						9,
+						10,
+						23
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty-Debug-7af30cb6e099ffd57e57.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ThirdParty"
+				},
+				{
+					"build" : "ThirdParty/glfw",
+					"childIndexes" : 
+					[
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty.glfw-Debug-c3dd973debaa59ed0a67.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "ThirdParty/glfw",
+					"targetIndexes" : 
+					[
+						16
+					]
+				},
+				{
+					"build" : "ThirdParty/glfw/src",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty.glfw.src-Debug-8cc4a89c41a78094623e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.1"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 1,
+					"source" : "ThirdParty/glfw/src",
+					"targetIndexes" : 
+					[
+						13
+					]
+				},
+				{
+					"build" : "ThirdParty/termcolor",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty.termcolor-Debug-ed24b7f8c61aa01cf261.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 2,
+					"source" : "ThirdParty/termcolor"
+				},
+				{
+					"build" : "ThirdParty/tinyobjloader",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty.tinyobjloader-Debug-a21f42e6275f0a1d1213.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.11"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 3,
+					"source" : "ThirdParty/tinyobjloader",
+					"targetIndexes" : 
+					[
+						15
+					]
+				},
+				{
+					"build" : "ThirdParty/stb-cmake",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty.stb-cmake-Debug-cf6296fb381a574ba63f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 4,
+					"source" : "ThirdParty/stb-cmake",
+					"targetIndexes" : 
+					[
+						14
+					]
+				},
+				{
+					"build" : "ThirdParty/glm",
+					"childIndexes" : 
+					[
+						8
+					],
+					"jsonFile" : "directory-ThirdParty.glm-Debug-fe5c65793b2b7eb1175e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 5,
+					"source" : "ThirdParty/glm"
+				},
+				{
+					"build" : "ThirdParty/glm/glm",
+					"jsonFile" : "directory-ThirdParty.glm.glm-Debug-48c4db2dfa4246c373ef.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.2"
+					},
+					"parentIndex" : 7,
+					"projectIndex" : 5,
+					"source" : "ThirdParty/glm/glm"
+				},
+				{
+					"build" : "ThirdParty/imgui-cmake",
+					"jsonFile" : "directory-ThirdParty.imgui-cmake-Debug-efb4e3c3b1cab20b0186.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 6,
+					"source" : "ThirdParty/imgui-cmake",
+					"targetIndexes" : 
+					[
+						11
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3",
+					"childIndexes" : 
+					[
+						11
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ThirdParty.Bullet3-Debug-124e1dba0492587b5222.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3"
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src",
+					"childIndexes" : 
+					[
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22
+					],
+					"jsonFile" : "directory-ThirdParty.Bullet3.src-Debug-991891cc91ea56951918.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 10,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src"
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/Bullet3OpenCL",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.Bullet3OpenCL-Debug-bc0af62bbc3a721d8940.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/Bullet3OpenCL",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/Bullet3Serialize/Bullet2FileLoader",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.Bullet3Serialize.Bullet2FileLoader-Debug-c53bc41112078e7620a3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/Bullet3Serialize/Bullet2FileLoader",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/Bullet3Dynamics",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.Bullet3Dynamics-Debug-5d4e52c4cc8ad68128d4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/Bullet3Dynamics",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/Bullet3Collision",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.Bullet3Collision-Debug-8e13cd4fd33201c30e86.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/Bullet3Collision",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/Bullet3Geometry",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.Bullet3Geometry-Debug-3066e8e3dd8df200fcb2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/Bullet3Geometry",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/BulletInverseDynamics",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.BulletInverseDynamics-Debug-bd0e6795d92d2a269e09.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/BulletInverseDynamics",
+					"targetIndexes" : 
+					[
+						9
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/BulletSoftBody",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.BulletSoftBody-Debug-81676982a8209b327dfd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/BulletSoftBody",
+					"targetIndexes" : 
+					[
+						10
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/BulletCollision",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.BulletCollision-Debug-ac3eb2f04b9c7f63cada.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/BulletCollision",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/BulletDynamics",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.BulletDynamics-Debug-beffecc720ec45183c80.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/BulletDynamics",
+					"targetIndexes" : 
+					[
+						8
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/LinearMath",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.LinearMath-Debug-0a98704dbcbe36e5e67e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/LinearMath",
+					"targetIndexes" : 
+					[
+						12
+					]
+				},
+				{
+					"build" : "ThirdParty/Bullet3/src/Bullet3Common",
+					"jsonFile" : "directory-ThirdParty.Bullet3.src.Bullet3Common-Debug-828c21b4644bfa69d380.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0.2"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 7,
+					"source" : "ThirdParty/Bullet3/src/Bullet3Common",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "ThirdParty/hv",
+					"jsonFile" : "directory-ThirdParty.hv-Debug-7d04708c1ab12728abb2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "ThirdParty/hv"
+				},
+				{
+					"build" : "AMBER",
+					"jsonFile" : "directory-AMBER-Debug-fd3aee4073716decb94b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "AMBER",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						23,
+						24
+					],
+					"name" : "AMBER",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2,
+						3
+					],
+					"name" : "GLFW",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						13,
+						16
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						4
+					],
+					"name" : "termcolor",
+					"parentIndex" : 0
+				},
+				{
+					"directoryIndexes" : 
+					[
+						5
+					],
+					"name" : "tinyobjloader",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						15
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						6
+					],
+					"name" : "stb",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						14
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						7,
+						8
+					],
+					"name" : "glm",
+					"parentIndex" : 0
+				},
+				{
+					"directoryIndexes" : 
+					[
+						9
+					],
+					"name" : "ImGUI",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						11
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22
+					],
+					"name" : "BULLET_PHYSICS",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						12
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 24,
+					"id" : "AMBER::@1929c0f2f4ef676c5c6d",
+					"jsonFile" : "target-AMBER-Debug-6182be916e2804f1c3b9.json",
+					"name" : "AMBER",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 13,
+					"id" : "Bullet2FileLoader::@74cfcbfcc2d43a032822",
+					"jsonFile" : "target-Bullet2FileLoader-Debug-a23e75ba49dce2a5ff38.json",
+					"name" : "Bullet2FileLoader",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 15,
+					"id" : "Bullet3Collision::@114a3b5a7335080d6821",
+					"jsonFile" : "target-Bullet3Collision-Debug-278baf9bc7c19f674935.json",
+					"name" : "Bullet3Collision",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 22,
+					"id" : "Bullet3Common::@33417e3d0aab065bf550",
+					"jsonFile" : "target-Bullet3Common-Debug-201ac97e7b54d34b973c.json",
+					"name" : "Bullet3Common",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 14,
+					"id" : "Bullet3Dynamics::@35f77737c9692db3fce0",
+					"jsonFile" : "target-Bullet3Dynamics-Debug-bfb50aa41810564495ad.json",
+					"name" : "Bullet3Dynamics",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 16,
+					"id" : "Bullet3Geometry::@094773bf4706335f30f0",
+					"jsonFile" : "target-Bullet3Geometry-Debug-6b7ceb02ceef35140015.json",
+					"name" : "Bullet3Geometry",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 12,
+					"id" : "Bullet3OpenCL_clew::@397944c33714d9a1dde9",
+					"jsonFile" : "target-Bullet3OpenCL_clew-Debug-58fcfb55ce5735ed94d8.json",
+					"name" : "Bullet3OpenCL_clew",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 19,
+					"id" : "BulletCollision::@71edb1124927c2512e05",
+					"jsonFile" : "target-BulletCollision-Debug-49018a7008b41c02de57.json",
+					"name" : "BulletCollision",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 20,
+					"id" : "BulletDynamics::@a54c8a8c997269404e30",
+					"jsonFile" : "target-BulletDynamics-Debug-93b4ef06e6f134cd661e.json",
+					"name" : "BulletDynamics",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 17,
+					"id" : "BulletInverseDynamics::@ba72e5cf3a9f209b0f59",
+					"jsonFile" : "target-BulletInverseDynamics-Debug-f7dc53050100c56639ab.json",
+					"name" : "BulletInverseDynamics",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 18,
+					"id" : "BulletSoftBody::@e42bf2ae0f29dabf1c19",
+					"jsonFile" : "target-BulletSoftBody-Debug-eb381c3262137364bcaa.json",
+					"name" : "BulletSoftBody",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "ImGUI::@8939aaaf70efac5ada87",
+					"jsonFile" : "target-ImGUI-Debug-5668cd8d70a2a6c90b9f.json",
+					"name" : "ImGUI",
+					"projectIndex" : 6
+				},
+				{
+					"directoryIndex" : 21,
+					"id" : "LinearMath::@021a73a5c25c231849ab",
+					"jsonFile" : "target-LinearMath-Debug-a0b151ffd593c7cb94ec.json",
+					"name" : "LinearMath",
+					"projectIndex" : 7
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "glfw::@b8609d2a923f90592f00",
+					"jsonFile" : "target-glfw-Debug-d12f1ffd2e615fde7820.json",
+					"name" : "glfw",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "stb::@3c4e8f2cf2fbcd5eedce",
+					"jsonFile" : "target-stb-Debug-2288c87c69ecba3a5471.json",
+					"name" : "stb",
+					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "tinyobjloader::@16ccb1181a08799007c4",
+					"jsonFile" : "target-tinyobjloader-Debug-298421a1656dc061650a.json",
+					"name" : "tinyobjloader",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "uninstall::@eacb3d8d312e3735715f",
+					"jsonFile" : "target-uninstall-Debug-28763665898f6525561b.json",
+					"name" : "uninstall",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/pierr/Downloads/Cours/Maths/Extrusion/MathExtrusion/Extrusion/out/build/x64-Debug",
+		"source" : "C:/Users/pierr/Downloads/Cours/Maths/Extrusion/MathExtrusion/Extrusion"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 5
+	}
+}

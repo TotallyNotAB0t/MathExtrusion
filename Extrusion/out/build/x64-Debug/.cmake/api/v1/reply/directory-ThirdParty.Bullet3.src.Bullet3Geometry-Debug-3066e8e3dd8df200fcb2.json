@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "ThirdParty/Bullet3/src/Bullet3Geometry",
+		"source" : "ThirdParty/Bullet3/src/Bullet3Geometry"
+	}
+}

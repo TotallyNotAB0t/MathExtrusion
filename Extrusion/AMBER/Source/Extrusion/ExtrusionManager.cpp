@@ -192,6 +192,67 @@ void ExtrusionManager::fixedUpdate()
 
 }
 
+// PoyoCode
+std::vector<glm::vec3> generateRevolutionPoints(const std::vector<glm::vec2>& bezierPoints, unsigned int revolutionSegments) {
+	std::vector<glm::vec3> revolutionPoints;
+
+	float angleStep = 2.0f * glm::pi<float>() / static_cast<float>(revolutionSegments);
+
+	for (unsigned int segment = 0; segment < revolutionSegments; ++segment) {
+		float angle = static_cast<float>(segment) * angleStep;
+
+		glm::mat3 rotationMatrix = glm::mat3(
+			glm::cos(angle), 0.0f, glm::sin(angle),
+			0.0f, 1.0f, 0.0f,
+			-glm::sin(angle), 0.0f, glm::cos(angle)
+		);
+
+		for (const auto& point : bezierPoints) {
+			glm::vec3 rotatedPoint = rotationMatrix * glm::vec3(point.x, 0.0f, point.y);
+			revolutionPoints.push_back(rotatedPoint);
+		}
+	}
+
+	return revolutionPoints;
+}
+
+// PoyoCode
+void generateRevolutionData(const std::vector<glm::vec3>& revolutionPoints, unsigned int revolutionSegments, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals) {
+	size_t numPoints = revolutionPoints.size();
+	size_t numCurvePoints = numPoints / revolutionSegments;
+
+	for (size_t i = 0; i < numPoints; ++i) {
+		size_t currentPointIndex = i;
+		size_t nextPointIndex = (i + 1) % numCurvePoints + (i / numCurvePoints) * numCurvePoints;
+		size_t nextRevolutionPointIndex = (i + numCurvePoints) % numPoints;
+
+		// Indices
+		indices.push_back(currentPointIndex);
+		indices.push_back(nextPointIndex);
+		indices.push_back(nextRevolutionPointIndex);
+
+		indices.push_back(nextPointIndex);
+		indices.push_back(nextRevolutionPointIndex + 1);
+		indices.push_back(nextRevolutionPointIndex);
+
+		// Texture coordinates
+		float texCoordX = static_cast<float>(i % numCurvePoints) / static_cast<float>(numCurvePoints - 1);
+		float texCoordY = static_cast<float>(i / numCurvePoints) / static_cast<float>(revolutionSegments - 1);
+
+		texCoords.push_back(texCoordX);
+		texCoords.push_back(texCoordY);
+
+		// Normals
+		glm::vec3 edge1 = revolutionPoints[nextPointIndex] - revolutionPoints[currentPointIndex];
+		glm::vec3 edge2 = revolutionPoints[nextRevolutionPointIndex] - revolutionPoints[currentPointIndex];
+		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+
+		normals.push_back(normal.x);
+		normals.push_back(normal.y);
+		normals.push_back(normal.z);
+	}
+}
+
 
 std::vector<glm::vec3> generateExtrusionPoints(const std::vector<glm::vec2>& bezierPoints, float height, float scaleFactor) 
 {
@@ -456,6 +517,45 @@ void ExtrusionManager::update()
 		m->setMaterial(mat);
 	}
 
+	// PoyoCode
+	if (m_extrusionRevolution)
+	{
+		m_extrusionRevolution = false;
+
+		Courbe c = m_courbes[m_listboxCurrentItem];
+
+		std::vector<glm::vec2> data;
+		if (c.courbetype == CourbeType::DeCasteljau)
+		{
+			data = DeCasteljau(c);
+		}
+		else
+		{
+			data = trianglePascal(c);
+		}
+
+		std::vector<glm::vec3> revolutionPoints = generateRevolutionPoints(data, c.revolutionSegments);
+
+		std::vector<unsigned int> indices;
+		std::vector<float> texCoords;
+		std::vector<float> normals;
+
+		generateRevolutionData(revolutionPoints, c.revolutionSegments, indices, texCoords, normals);
+
+		float* pos = new float[revolutionPoints.size() * 3];
+		for (size_t i = 0; i < revolutionPoints.size(); ++i) {
+			pos[i * 3] = revolutionPoints[i].x;
+			pos[i * 3 + 1] = revolutionPoints[i].y;
+			pos[i * 3 + 2] = revolutionPoints[i].z;
+		}
+
+		ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCoords.data(), normals.data(), indices.data(), revolutionPoints.size(), indices.size());
+		Model* m = m_pc.modelManager->createModel(sbb);
+		Materials* mat = m_pc.materialManager->createMaterial();
+		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
+		m->setMaterial(mat);
+	}
+
 	if (m_pas)
 	{		
 		for (int i = 0; i < m_courbes[m_listboxCurrentItem].segments.size(); i++)
@@ -584,9 +684,23 @@ void ExtrusionManager::render(VulkanMisc* vM)
 					}
 				}
 
+				if (ImGui::InputInt("RevolutionSegments", &(m_courbes[m_listboxCurrentItem].revolutionSegments), 1, 2))
+				{
+					if (m_courbes[m_listboxCurrentItem].revolutionSegments <= 0)
+					{
+						m_courbes[m_listboxCurrentItem].revolutionSegments = 1;
+					}
+				}
+
 				if (ImGui::Button("Extrusion Simple"))
 				{
 					m_extrusion = true;
+				}
+
+				// PoyoCode
+				if (ImGui::Button("Extrusion par révolution"))
+				{
+					m_extrusionRevolution = true;
 				}
 
 				if (ImGui::Button("Supprimer"))

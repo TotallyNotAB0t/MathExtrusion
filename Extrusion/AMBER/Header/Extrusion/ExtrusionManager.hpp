@@ -15,6 +15,7 @@ struct Courbe
 		pas = 50;
 		height = 5.0f;
 		scale = 1.0f;
+		revolutionSegments = 36;
 	}
 	std::vector<glm::vec2> cloudPoint;
 	std::vector<int> coefControl;
@@ -24,6 +25,7 @@ struct Courbe
 	float height;
 	float scale;
 	int pas;
+	int revolutionSegments;
 	CourbeType courbetype;
 };
 
@@ -54,6 +56,7 @@ private:
 	bool m_clearCloudPoint = false;
 	bool m_erase = false;
 	bool m_extrusion = false;
+	bool m_extrusionRevolution = false;
 
 	bool m_cloudButton = false;
 	bool m_isMouseOverUI = false;	
