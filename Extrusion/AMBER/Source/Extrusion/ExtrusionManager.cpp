@@ -504,7 +504,8 @@ void ExtrusionManager::update()
 		generateExtrusionData(extrusionPoints, indices, texCoords, normals);
 
 		float* pos = new float[extrusionPoints.size() * 3];
-		for (size_t i = 0; i < extrusionPoints.size(); ++i) {
+		for (size_t i = 0; i < extrusionPoints.size(); ++i) 
+		{
 			pos[i * 3] = extrusionPoints[i].x;
 			pos[i * 3 + 1] = extrusionPoints[i].y;
 			pos[i * 3 + 2] = extrusionPoints[i].z;
@@ -515,6 +516,8 @@ void ExtrusionManager::update()
 		Materials* mat = m_pc.materialManager->createMaterial();
 		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png",false));
 		m->setMaterial(mat);
+		mat->setMetallic(0.7f);
+		mat->setRoughness(0.1f);
 	}
 
 	// PoyoCode

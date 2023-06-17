@@ -303,6 +303,10 @@ namespace Ge
 				normal[3 * i + 0],
 				normal[3 * i + 1],
 				normal[3 * i + 2] };
+
+			vertex.color = { 1, 1, 1 };
+			vertex.tangents = { 0, 0, 0 };
+
 			vertices.push_back(vertex);
 		}
 
