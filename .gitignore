@@ -21,10 +21,9 @@
 *.dll
 **/*.spv
 *.spv
-**/*.png
-*.png
 **/*.class
 *.class
-
+**/out/
+*/out/
 
 
