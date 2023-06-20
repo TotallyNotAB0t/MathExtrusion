@@ -1,5 +1,10 @@
 #include "ExtrusionManager.hpp"
 
+ExtrusionManager::ExtrusionManager(Model* plane)
+{
+	m_plane = plane;
+	m_planeShowHide = true;
+}
 
 std::vector<glm::vec2> ExtrusionManager::DeCasteljau(Courbe courbe)
 {
@@ -59,8 +64,16 @@ void ExtrusionManager::updateCourbe(int i)
 	for (int j = 0; j < m_courbes[i].points.size(); j++)
 	{		
 		pos = m_courbes[i].cloudPoint[j];
-		m_courbes[i].points[j]->setPosition(glm::vec3(pos.x,0.0f, pos.y));
-		m_courbes[i].light[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+		if (!m_courbes[i].rotation)
+		{
+			m_courbes[i].points[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+			m_courbes[i].light[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+		}
+		else
+		{
+			m_courbes[i].points[j]->setPosition(glm::vec3(pos.x, pos.y, 0.0f));
+			m_courbes[i].light[j]->setPosition(glm::vec3(pos.x, pos.y, 0.0f));
+		}
 	}
 
 	for (int j = 0; j < m_courbes[i].segments.size(); j++)
@@ -69,10 +82,24 @@ void ExtrusionManager::updateCourbe(int i)
 		glm::vec2 p2 = data[j+1];
 		glm::vec2 pos = (p1 + p2) / 2.0f;
 		float scale = glm::distance(p1, p2) / 2.0f;
-		m_courbes[i].segments[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+		if (!m_courbes[i].rotation)
+		{
+			m_courbes[i].segments[j]->setPosition(glm::vec3(pos.x, 0.0f, pos.y));
+		}
+		else
+		{
+			m_courbes[i].segments[j]->setPosition(glm::vec3(pos.x, pos.y, 0.0f));
+		}
 		m_courbes[i].segments[j]->setScale(glm::vec3(scale, m_size, m_size));
 		glm::vec2 direction = p2 - p1;
-		m_courbes[i].segments[j]->setEulerAngles(directionToRotation(glm::vec3(direction.x, 0.0f, direction.y)));
+		if (!m_courbes[i].rotation)
+		{
+			m_courbes[i].segments[j]->setEulerAngles(directionToRotation(glm::vec3(direction.x, 0.0f, direction.y)));
+		}
+		else
+		{
+			m_courbes[i].segments[j]->setEulerAngles(directionToRotation(glm::vec3(direction.x, direction.y, 0.0f)));
+		}
 	}
 }
 
@@ -193,22 +220,32 @@ void ExtrusionManager::fixedUpdate()
 }
 
 // PoyoCode
-std::vector<glm::vec3> generateRevolutionPoints(const std::vector<glm::vec2>& bezierPoints, unsigned int revolutionSegments) {
+std::vector<glm::vec3> generateRevolutionPoints(const std::vector<glm::vec2>& bezierPoints, unsigned int revolutionSegments,Courbe c) 
+{
 	std::vector<glm::vec3> revolutionPoints;
 
 	float angleStep = 2.0f * glm::pi<float>() / static_cast<float>(revolutionSegments);
 
-	for (unsigned int segment = 0; segment < revolutionSegments; ++segment) {
+	for (unsigned int segment = 0; segment < revolutionSegments; ++segment) 
+	{
 		float angle = static_cast<float>(segment) * angleStep;
 
 		glm::mat3 rotationMatrix = glm::mat3(
 			glm::cos(angle), 0.0f, glm::sin(angle),
 			0.0f, 1.0f, 0.0f,
 			-glm::sin(angle), 0.0f, glm::cos(angle)
-		);
-
-		for (const auto& point : bezierPoints) {
-			glm::vec3 rotatedPoint = rotationMatrix * glm::vec3(point.x, 0.0f, point.y);
+		);		
+		for (const auto& point : bezierPoints) 
+		{
+			glm::vec3 rotatedPoint;
+			if (!c.rotation)
+			{
+				rotatedPoint = rotationMatrix * glm::vec3(point.x, 0.0f, point.y);
+			}
+			else
+			{
+				rotatedPoint = rotationMatrix * glm::vec3(point.x, point.y, 0.0f);
+			}
 			revolutionPoints.push_back(rotatedPoint);
 		}
 	}
@@ -217,41 +254,50 @@ std::vector<glm::vec3> generateRevolutionPoints(const std::vector<glm::vec2>& be
 }
 
 // PoyoCode
-void generateRevolutionData(const std::vector<glm::vec3>& revolutionPoints, unsigned int revolutionSegments, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals) {
+void generateRevolutionData(const std::vector<glm::vec3>& revolutionPoints, unsigned int revolutionSegments, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals) 
+{
 	size_t numPoints = revolutionPoints.size();
-	size_t numCurvePoints = numPoints / revolutionSegments;
 
-	for (size_t i = 0; i < numPoints; ++i) {
-		size_t currentPointIndex = i;
-		size_t nextPointIndex = (i + 1) % numCurvePoints + (i / numCurvePoints) * numCurvePoints;
-		size_t nextRevolutionPointIndex = (i + numCurvePoints) % numPoints;
+	for (size_t i = 0; i < numPoints - 2; i += 2)
+	{
+		size_t bottomIndex = i;
+		size_t topIndex = i + 1;
+		size_t nextBottomIndex = i + 2;
+		size_t nextTopIndex = i + 3;
 
 		// Indices
-		indices.push_back(currentPointIndex);
-		indices.push_back(nextPointIndex);
-		indices.push_back(nextRevolutionPointIndex);
+		indices.push_back(bottomIndex);
+		indices.push_back(topIndex);
+		indices.push_back(nextTopIndex);
 
-		indices.push_back(nextPointIndex);
-		indices.push_back(nextRevolutionPointIndex + 1);
-		indices.push_back(nextRevolutionPointIndex);
+		indices.push_back(bottomIndex);
+		indices.push_back(nextTopIndex);
+		indices.push_back(nextBottomIndex);
 
 		// Texture coordinates
-		float texCoordX = static_cast<float>(i % numCurvePoints) / static_cast<float>(numCurvePoints - 1);
-		float texCoordY = static_cast<float>(i / numCurvePoints) / static_cast<float>(revolutionSegments - 1);
+		float texCoordX = static_cast<float>(i) / static_cast<float>(numPoints - 2);
+		float nextTexCoordX = static_cast<float>(i + 2) / static_cast<float>(numPoints - 2);
 
 		texCoords.push_back(texCoordX);
-		texCoords.push_back(texCoordY);
+		texCoords.push_back(0.0f);
+
+		texCoords.push_back(texCoordX);
+		texCoords.push_back(1.0f);
 
 		// Normals
-		glm::vec3 edge1 = revolutionPoints[nextPointIndex] - revolutionPoints[currentPointIndex];
-		glm::vec3 edge2 = revolutionPoints[nextRevolutionPointIndex] - revolutionPoints[currentPointIndex];
-		glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+		glm::vec3 edge1 = revolutionPoints[nextBottomIndex] - revolutionPoints[bottomIndex];
+		glm::vec3 edge2 = revolutionPoints[topIndex] - revolutionPoints[bottomIndex];
+		glm::vec3 normal = glm::normalize(glm::cross(edge2, edge1));
 
-		normals.push_back(normal.x);
-		normals.push_back(normal.y);
-		normals.push_back(normal.z);
+		for (int j = 0; j < 2; ++j)
+		{
+			normals.push_back(normal.x);
+			normals.push_back(normal.y);
+			normals.push_back(normal.z);
+		}
 	}
 }
+
 
 
 std::vector<glm::vec3> generateExtrusionPoints(const std::vector<glm::vec2>& bezierPoints, float height, float scaleFactor) 
@@ -323,6 +369,11 @@ void ExtrusionManager::update()
         m_cam2D->setPriority(m_priority ? 1 : 0);
         m_pc.cameraManager->updatePriorityCamera();
     }
+	if (m_planeActive)
+	{
+		m_planeActive = false;		
+		m_plane->setScale(m_planeShowHide ? glm::vec3(10.0f, 1.0f, 10.0f) : glm::vec3(0.0f));
+	}
 	if (m_clearCloudPoint)
 	{
 		m_clearCloudPoint = false;
@@ -478,6 +529,29 @@ void ExtrusionManager::update()
 		m_control_point = -1;
 	}
 
+	if (m_rotate)
+	{
+		m_rotate = false;
+		Courbe c = m_courbes[m_listboxCurrentItem];
+		c.rotation = !c.rotation;
+		glm::mat4 rotationMatrix;
+		if (c.rotation)
+		{
+			rotationMatrix = glm::toMat4(glm::quat(glm::radians(glm::vec3(-90.0f, 0.0f, 0.0f))));
+		}
+		else
+		{
+			rotationMatrix = glm::toMat4(glm::quat(glm::radians(glm::vec3(90.0f, 0.0f, 0.0f))));
+		}
+		
+		for (size_t i = 0; i < c.points.size(); i++)
+		{
+			c.points[i]->setPosition(glm::vec3(glm::vec4(c.points[i]->getPosition(), 1.0f) * rotationMatrix));
+		}
+		m_courbes[m_listboxCurrentItem] = c;
+		updateCourbe(m_listboxCurrentItem);
+	}
+
 	if (m_extrusion)
 	{
 		m_extrusion = false;
@@ -523,8 +597,7 @@ void ExtrusionManager::update()
 	// PoyoCode
 	if (m_extrusionRevolution)
 	{
-		m_extrusionRevolution = false;
-
+		m_extrusionRevolution = false;		
 		Courbe c = m_courbes[m_listboxCurrentItem];
 
 		std::vector<glm::vec2> data;
@@ -537,26 +610,31 @@ void ExtrusionManager::update()
 			data = trianglePascal(c);
 		}
 
-		std::vector<glm::vec3> revolutionPoints = generateRevolutionPoints(data, c.revolutionSegments);
+		std::vector<glm::vec3> revolutionPoints = generateRevolutionPoints(data, c.revolutionSegments,c);
 
 		std::vector<unsigned int> indices;
 		std::vector<float> texCoords;
 		std::vector<float> normals;
 
-		generateRevolutionData(revolutionPoints, c.revolutionSegments, indices, texCoords, normals);
+		generateRevolutionData(revolutionPoints, c.revolutionSegments, indices, texCoords, normals);		
 
 		float* pos = new float[revolutionPoints.size() * 3];
-		for (size_t i = 0; i < revolutionPoints.size(); ++i) {
+		for (size_t i = 0; i < revolutionPoints.size(); ++i) 
+		{
 			pos[i * 3] = revolutionPoints[i].x;
 			pos[i * 3 + 1] = revolutionPoints[i].y;
 			pos[i * 3 + 2] = revolutionPoints[i].z;
+			Model* m = m_pc.modelManager->createModel(m_sb);
+			m->setPosition(glm::vec3(pos[i * 3], pos[i * 3+1], pos[i * 3+2]));
+			m->setScale(glm::vec3(0.025f));
 		}
 
 		ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCoords.data(), normals.data(), indices.data(), revolutionPoints.size(), indices.size());
 		Model* m = m_pc.modelManager->createModel(sbb);
-		Materials* mat = m_pc.materialManager->createMaterial();
-		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
-		m->setMaterial(mat);
+		//Materials* mat = m_pc.materialManager->createMaterial();
+		//mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
+		//m->setMaterial(mat);
+		
 	}
 
 	if (m_pas)
@@ -607,6 +685,10 @@ void ExtrusionManager::render(VulkanMisc* vM)
         ImVec2 rectMax = ImVec2(windowPos.x+ windowSize.x, windowPos.y + windowSize.y);
         m_isMouseOverUI = ImGui::IsMouseHoveringRect(rectMin, rectMax);
         if (ImGui::Checkbox("Change Camera",&m_cameraChange)){}
+		if (ImGui::Checkbox("Show/Hide Plane", &m_planeShowHide)) 
+		{
+			m_planeActive = true;
+		}
         if (m_cloudPoint)
         {
             if (ImGui::Button("Close"))
@@ -695,13 +777,18 @@ void ExtrusionManager::render(VulkanMisc* vM)
 					}
 				}
 
+				if (ImGui::Button("Rotation"))
+				{
+					m_rotate = true;
+				}
+
 				if (ImGui::Button("Extrusion Simple"))
 				{
 					m_extrusion = true;
 				}
 
 				// PoyoCode
-				if (ImGui::Button("Extrusion par révolution"))
+				if (ImGui::Button("Extrusion par revolution"))
 				{
 					m_extrusionRevolution = true;
 				}

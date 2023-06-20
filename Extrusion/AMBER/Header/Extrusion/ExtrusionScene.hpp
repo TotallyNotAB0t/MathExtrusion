@@ -13,7 +13,8 @@ public:
 	void unload();
 private:
 	ptrClass m_pc;
-	ExtrusionManager m_em;
+	ExtrusionManager* m_em;
+
 };
 
 #endif //!__EXTRUSION_SCENE__

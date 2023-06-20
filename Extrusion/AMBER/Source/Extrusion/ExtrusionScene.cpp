@@ -3,11 +3,13 @@
 void ExtrusionScene::load()
 {
 	m_pc = GameEngine::getPtrClass();
-	m_pc.behaviourManager->addBehaviour(&m_em);
-	m_pc.hud->addBlockUI(&m_em);
-
 	ShapeBuffer* sb = m_pc.modelManager->allocateBuffer("../Model/plane.obj");
-	Model* plane = m_pc.modelManager->createModel(sb,"Plane");
+	Model* plane = m_pc.modelManager->createModel(sb, "Plane");
+	m_em = new ExtrusionManager(plane);
+	m_pc.behaviourManager->addBehaviour(m_em);
+	m_pc.hud->addBlockUI(m_em);
+	
+	
 	Textures* t = m_pc.textureManager->createTexture("../Texture/damier.png", false);
 	Materials* mat = m_pc.materialManager->createMaterial();
 	mat->setMetallic(0.8f);
@@ -27,6 +29,6 @@ void ExtrusionScene::load()
 
 void ExtrusionScene::unload()
 {
-	m_pc.behaviourManager->removeBehaviour(&m_em);
-	m_pc.hud->removeBlockUI(&m_em);
+	m_pc.behaviourManager->removeBehaviour(m_em);
+	m_pc.hud->removeBlockUI(m_em);
 }

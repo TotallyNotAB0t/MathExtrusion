@@ -27,11 +27,13 @@ struct Courbe
 	int pas;
 	int revolutionSegments;
 	CourbeType courbetype;
+	bool rotation = false;
 };
 
 class ExtrusionManager : public ImguiBlock, public Behaviour
 {
 public:
+	ExtrusionManager(Model* plane);
 	void start();
 	void fixedUpdate();
 	void update();
@@ -51,10 +53,13 @@ private:
 
 	bool m_open = false;
 	bool m_cameraChange = false;
+	bool m_planeShowHide = false;
+	bool m_planeActive = true;
 	bool m_priority = false;
 	bool m_cloudPoint = false;
 	bool m_clearCloudPoint = false;
 	bool m_erase = false;
+	bool m_rotate = false;
 	bool m_extrusion = false;
 	bool m_extrusionRevolution = false;
 
@@ -80,6 +85,7 @@ private:
 	Materials* m_pointMat = nullptr;
 	Materials* m_segmentMat = nullptr;
 	std::vector<Courbe> m_courbes;
+	Model* m_plane;
 };
 
 #endif//!__EXTRUSION_MANAGER__
