@@ -254,48 +254,54 @@ std::vector<glm::vec3> generateRevolutionPoints(const std::vector<glm::vec2>& be
 }
 
 // PoyoCode
-void generateRevolutionData(const std::vector<glm::vec3>& revolutionPoints, unsigned int revolutionSegments, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals) 
+void generateRevolutionData(std::vector<glm::vec3>& revolutionPoints, Courbe c, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals) 
 {
-	size_t numPoints = revolutionPoints.size();
-
-	for (size_t i = 0; i < numPoints - 2; i += 2)
+	for (int i = 0; i < c.pas; i++)
 	{
-		size_t bottomIndex = i;
-		size_t topIndex = i + 1;
-		size_t nextBottomIndex = i + 2;
-		size_t nextTopIndex = i + 3;
+		revolutionPoints.push_back(glm::vec3(revolutionPoints[i])*0.99999f);
+	}
+	for (size_t i = 0; i < c.revolutionSegments+1; i++)
+	{
+		for (size_t j = 0; j < c.pas; j++)
+		{			
+			size_t topIndex = c.pas * i + j;
+			size_t bottomIndex = (c.pas * i + j+1) % revolutionPoints.size();
+			size_t nextTopIndex = (c.pas * (i+1) + j)% revolutionPoints.size();
+			size_t nextBottomIndex = (c.pas * (i + 1) + (j+1)) % revolutionPoints.size();
 
-		// Indices
-		indices.push_back(bottomIndex);
-		indices.push_back(topIndex);
-		indices.push_back(nextTopIndex);
+			indices.push_back(topIndex);
+			indices.push_back(bottomIndex);
+			indices.push_back(nextTopIndex);
+			
+			
+			indices.push_back(bottomIndex);
+			indices.push_back(nextBottomIndex);
+			indices.push_back(nextTopIndex);
+	
+			texCoords.push_back(i * 0.25f);
+			texCoords.push_back(j * 0.25f);
 
-		indices.push_back(bottomIndex);
-		indices.push_back(nextTopIndex);
-		indices.push_back(nextBottomIndex);
+			// Normals
+			glm::vec3 edge1 = revolutionPoints[nextBottomIndex] - revolutionPoints[topIndex];
+			glm::vec3 edge2 = revolutionPoints[nextTopIndex] - revolutionPoints[topIndex];
+			glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 
-		// Texture coordinates
-		float texCoordX = static_cast<float>(i) / static_cast<float>(numPoints - 2);
-		float nextTexCoordX = static_cast<float>(i + 2) / static_cast<float>(numPoints - 2);
-
-		texCoords.push_back(texCoordX);
-		texCoords.push_back(0.0f);
-
-		texCoords.push_back(texCoordX);
-		texCoords.push_back(1.0f);
-
-		// Normals
-		glm::vec3 edge1 = revolutionPoints[nextBottomIndex] - revolutionPoints[bottomIndex];
-		glm::vec3 edge2 = revolutionPoints[topIndex] - revolutionPoints[bottomIndex];
-		glm::vec3 normal = glm::normalize(glm::cross(edge2, edge1));
-
-		for (int j = 0; j < 2; ++j)
-		{
-			normals.push_back(normal.x);
-			normals.push_back(normal.y);
-			normals.push_back(normal.z);
+			
+			if (j == c.pas-1)
+			{
+				normals.push_back(-normal.x);
+				normals.push_back(-normal.y);
+				normals.push_back(-normal.z);
+			}
+			else
+			{
+				normals.push_back(normal.x);
+				normals.push_back(normal.y);
+				normals.push_back(normal.z);
+			}
 		}
 	}
+
 }
 
 
@@ -616,24 +622,25 @@ void ExtrusionManager::update()
 		std::vector<float> texCoords;
 		std::vector<float> normals;
 
-		generateRevolutionData(revolutionPoints, c.revolutionSegments, indices, texCoords, normals);		
+		generateRevolutionData(revolutionPoints,c, indices, texCoords, normals);		
 
 		float* pos = new float[revolutionPoints.size() * 3];
-		for (size_t i = 0; i < revolutionPoints.size(); ++i) 
+		for (size_t i = 0; i < revolutionPoints.size(); i++) 
 		{
 			pos[i * 3] = revolutionPoints[i].x;
 			pos[i * 3 + 1] = revolutionPoints[i].y;
 			pos[i * 3 + 2] = revolutionPoints[i].z;
-			Model* m = m_pc.modelManager->createModel(m_sb);
-			m->setPosition(glm::vec3(pos[i * 3], pos[i * 3+1], pos[i * 3+2]));
-			m->setScale(glm::vec3(0.025f));
 		}
 
 		ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCoords.data(), normals.data(), indices.data(), revolutionPoints.size(), indices.size());
 		Model* m = m_pc.modelManager->createModel(sbb);
-		//Materials* mat = m_pc.materialManager->createMaterial();
-		//mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
-		//m->setMaterial(mat);
+		//GraphiquePipeline* gp = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_normal.spv", "../Shader/vert_normal.spv",false);
+		Materials* mat = m_pc.materialManager->createMaterial();
+		//mat->setPipeline(gp);
+		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
+		mat->setMetallic(0.8f);
+		mat->setRoughness(0.15f);
+		m->setMaterial(mat);
 		
 	}
 
