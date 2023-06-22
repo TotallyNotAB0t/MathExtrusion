@@ -505,6 +505,14 @@ void ExtrusionManager::update()
 		m_courbes.erase(m_courbes.begin()+m_listboxCurrentItem);
 		m_erase = false;
 	}
+
+	if (m_eraseExtrusion)
+	{
+		m_pc.modelManager->destroyModel(m_extrusionList[m_listboxCurrentItemExtrusion]);
+		m_extrusionList.erase(m_extrusionList.begin() + m_listboxCurrentItemExtrusion);
+		m_eraseExtrusion = false;
+	}
+
 	if (m_pc.inputManager->getMouse(0) && !m_isMouseOverUI)
 	{
 		glm::vec2 mp = glm::vec2(m_pc.inputManager->getMousePosX(), m_pc.inputManager->getMousePosY());
@@ -598,6 +606,7 @@ void ExtrusionManager::update()
 		m->setMaterial(mat);
 		mat->setMetallic(0.7f);
 		mat->setRoughness(0.1f);
+		m_extrusionList.push_back(m);
 	}
 
 	// PoyoCode
@@ -641,6 +650,7 @@ void ExtrusionManager::update()
 		mat->setMetallic(0.8f);
 		mat->setRoughness(0.15f);
 		m->setMaterial(mat);
+		m_extrusionList.push_back(m);
 		
 	}
 
@@ -723,17 +733,29 @@ void ExtrusionManager::render(VulkanMisc* vM)
 			m_decastelJau = m_points_clouds.size() >= 3 && !m_cloudPoint;
 		}
 		cnames.clear();
+		cExtrusionNames.clear();
 		valueS.clear();
+		valueSExtrusion.clear();
 		for (size_t i = 0; i < m_courbes.size(); ++i)
 		{
 			valueS.push_back(("Courbe " + std::to_string(i)));
 			cnames.push_back(valueS[i].c_str());
 		}
+
+		for (size_t i = 0; i < m_extrusionList.size(); ++i)
+		{
+			valueSExtrusion.push_back(("Extrusion " + std::to_string(i)));
+			cExtrusionNames.push_back(valueSExtrusion[i].c_str());
+		}
+
 		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Bezier list");
 		ImGui::PushItemWidth(m_pc.settingManager->getWindowWidth() / 7.0f);
 		ImGui::ListBox("###Hierarchy", &m_listboxCurrentItem, cnames.data(), cnames.size(), 5);
+		ImGui::ListBox("###Hierarchy Two", &m_listboxCurrentItemExtrusion, cExtrusionNames.data(), cExtrusionNames.size(), 5);
 		ImGui::PopItemWidth();
 		ImGui::TextColored(ImVec4(0.2f, 1, 0.2f, 1), "Inspector\n\n");
+
+		// Curves
 		if (cnames.size() > 0)
 		{
 			ImGui::BeginChild("");
@@ -807,6 +829,22 @@ void ExtrusionManager::render(VulkanMisc* vM)
 			}
 			ImGui::EndChild();
 		}
+
+		// Extrusions
+		if (cExtrusionNames.size() > 0)
+		{
+			ImGui::BeginChild("");
+			if (m_extrusionList.size() > m_listboxCurrentItemExtrusion)
+			{
+
+				if (ImGui::Button("Supprimer extrusion"))
+				{
+					m_eraseExtrusion = true;
+				}
+			}
+			ImGui::EndChild();
+		}
+
 		ImGui::Spacing();
     }
     ImGui::End();
