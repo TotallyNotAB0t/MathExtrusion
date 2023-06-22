@@ -62,6 +62,7 @@ private:
 	bool m_rotate = false;
 	bool m_extrusion = false;
 	bool m_extrusionRevolution = false;
+	bool m_extrusionCourbe = false;
 
 	bool m_cloudButton = false;
 	bool m_isMouseOverUI = false;	

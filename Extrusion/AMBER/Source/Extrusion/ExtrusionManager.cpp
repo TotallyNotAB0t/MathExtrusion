@@ -1,4 +1,11 @@
 #include "ExtrusionManager.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <iostream>
 
 ExtrusionManager::ExtrusionManager(Model* plane)
 {
@@ -304,7 +311,87 @@ void generateRevolutionData(std::vector<glm::vec3>& revolutionPoints, Courbe c, 
 
 }
 
+//BoicCode
+std::vector<glm::vec3> generateCourbeExtrusionPoints(const std::vector<glm::vec2>& bezierPoints, unsigned int revolutionSegments, Courbe c)
+{
+	std::vector<glm::vec3> revolutionPoints;
 
+	float angleStep = 2.0f * glm::pi<float>() / static_cast<float>(revolutionSegments);
+
+	for (unsigned int segment = 0; segment < revolutionSegments; ++segment)
+	{
+		float angle = static_cast<float>(segment) * angleStep;
+		
+		
+		for (size_t i = 0; i < bezierPoints.size(); i++)
+		{
+			glm::vec2 direction = glm::normalize(bezierPoints[i] - bezierPoints[(i+1)% bezierPoints.size()]);
+			glm::vec2 tangent = glm::rotate(direction, glm::half_pi<float>());
+			glm::mat4 translationMatrix = glm::mat4(1.0f);
+			
+			translationMatrix = glm::translate(translationMatrix, glm::vec3(bezierPoints[i].x, bezierPoints[i].y, 0.0f));
+			translationMatrix = glm::rotate(translationMatrix, angle, glm::vec3(direction.x, 0.0f, direction.y));
+			//revolutionPoints.push_back(glm::vec3(glm::vec4(tangent.x + bezierPoints[i].x, 0.0f, tangent.y + bezierPoints[i].y, 1.0f)));
+			revolutionPoints.push_back(glm::vec3(glm::vec4(tangent.x, 0.0f, tangent.y, 1.0f) * translationMatrix) + glm::vec3(bezierPoints[i].x, 0.0f, bezierPoints[i].y));
+		}
+	}
+
+	return revolutionPoints;
+}
+void generateCourbeExtrusionData(std::vector<glm::vec3>& revolutionPoints, Courbe c, std::vector<unsigned int>& indices, std::vector<float>& texCoords, std::vector<float>& normals)
+{
+	for (int i = 0; i < c.pas; i++)
+	{
+		revolutionPoints.push_back(glm::vec3(revolutionPoints[i]) * 0.99999f);
+	}
+	for (size_t i = 0; i < c.revolutionSegments; i++)
+	{
+		for (size_t j = 0; j < c.pas-1; j++)
+		{
+			size_t topIndex = c.pas * i + j;
+			size_t bottomIndex = (c.pas * i + j + 1) % revolutionPoints.size();
+			size_t nextTopIndex = (c.pas * (i + 1) + j) % revolutionPoints.size();
+			size_t nextBottomIndex = (c.pas * (i + 1) + (j + 1)) % revolutionPoints.size();
+			
+			indices.push_back(topIndex);
+			indices.push_back(nextTopIndex);
+			indices.push_back(bottomIndex);
+			
+
+			indices.push_back(bottomIndex);
+			indices.push_back(nextTopIndex);
+			indices.push_back(nextBottomIndex);
+			
+			texCoords.push_back(i * 0.25f);
+			texCoords.push_back(j * 0.25f);
+
+			// Normals
+			glm::vec3 edge1 = revolutionPoints[nextBottomIndex] - revolutionPoints[topIndex];
+			glm::vec3 edge2 = revolutionPoints[nextTopIndex] - revolutionPoints[topIndex];
+			glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+
+
+			if (j == c.pas - 1)
+			{
+				normals.push_back(-normal.x);
+				normals.push_back(-normal.y);
+				normals.push_back(-normal.z);
+			}
+			else
+			{
+				normals.push_back(normal.x);
+				normals.push_back(normal.y);
+				normals.push_back(normal.z);
+			}
+			
+		}
+		indices.push_back(1);
+		indices.push_back(0);
+		indices.push_back(0);
+
+	}
+
+}
 
 std::vector<glm::vec3> generateExtrusionPoints(const std::vector<glm::vec2>& bezierPoints, float height, float scaleFactor) 
 {
@@ -644,6 +731,50 @@ void ExtrusionManager::update()
 		
 	}
 
+	//BoicCode
+	if (m_extrusionCourbe)
+	{
+		m_extrusionCourbe = false;
+		Courbe c = m_courbes[m_listboxCurrentItem];
+
+		std::vector<glm::vec2> data;
+		if (c.courbetype == CourbeType::DeCasteljau)
+		{
+			data = DeCasteljau(c);
+		}
+		else
+		{
+			data = trianglePascal(c);
+		}
+
+		std::vector<glm::vec3> revolutionPoints = generateCourbeExtrusionPoints(data, c.revolutionSegments, c);
+		
+
+		std::vector<unsigned int> indices;
+		std::vector<float> texCoords;
+		std::vector<float> normals;
+
+		generateCourbeExtrusionData(revolutionPoints, c, indices, texCoords, normals);
+
+		float* pos = new float[revolutionPoints.size() * 3];
+		for (size_t i = 0; i < revolutionPoints.size(); i++)
+		{
+			pos[i * 3] = revolutionPoints[i].x;
+			pos[i * 3 + 1] = revolutionPoints[i].y;
+			pos[i * 3 + 2] = revolutionPoints[i].z;
+		}
+
+		ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCoords.data(), normals.data(), indices.data(), revolutionPoints.size(), indices.size());
+		Model* m = m_pc.modelManager->createModel(sbb);
+		//GraphiquePipeline* gp = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_normal.spv", "../Shader/vert_normal.spv",false);
+		Materials* mat = m_pc.materialManager->createMaterial();
+		//mat->setPipeline(gp);
+		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
+		mat->setMetallic(0.8f);
+		mat->setRoughness(0.15f);
+		m->setMaterial(mat);
+	}
+
 	if (m_pas)
 	{		
 		for (int i = 0; i < m_courbes[m_listboxCurrentItem].segments.size(); i++)
@@ -798,6 +929,12 @@ void ExtrusionManager::render(VulkanMisc* vM)
 				if (ImGui::Button("Extrusion par revolution"))
 				{
 					m_extrusionRevolution = true;
+				}
+
+				// BoicCode
+				if (ImGui::Button("Extrusion sur courbe 2D"))
+				{
+					m_extrusionCourbe = true;
 				}
 
 				if (ImGui::Button("Supprimer"))
