@@ -59,6 +59,7 @@ private:
 	bool m_cloudPoint = false;
 	bool m_clearCloudPoint = false;
 	bool m_erase = false;
+	bool m_eraseExtrusion = false;
 	bool m_rotate = false;
 	bool m_extrusion = false;
 	bool m_extrusionRevolution = false;
@@ -76,8 +77,11 @@ private:
 	int m_courbe_point = 0;
 	bool m_pas = false;
 	int m_listboxCurrentItem = 0;
+	int m_listboxCurrentItemExtrusion = 0;
 	std::vector<const char*> cnames;
+	std::vector<const char*> cExtrusionNames;
 	std::vector<std::string> valueS;
+	std::vector<std::string> valueSExtrusion;
 
 	std::vector<Model*> m_points_clouds;
 	std::vector<PointLight*> m_points_light_clouds;
@@ -86,6 +90,7 @@ private:
 	Materials* m_pointMat = nullptr;
 	Materials* m_segmentMat = nullptr;
 	std::vector<Courbe> m_courbes;
+	std::vector<Model*> m_extrusionList;
 	Model* m_plane;
 };
 
