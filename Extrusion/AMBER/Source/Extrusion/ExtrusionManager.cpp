@@ -34,9 +34,9 @@ std::vector<glm::vec2> ExtrusionManager::DeCasteljau(Courbe courbe)
 		return glm::vec2(x, y);
 	};
 
-	for (int t = 0; t <= courbe.pas; ++t)
+	for (int t = 0; t <= courbe.pas-1; ++t)
 	{
-		float u = static_cast<float>(t) / courbe.pas;
+		float u = static_cast<float>(t) / (courbe.pas);
 
 		std::vector<glm::vec2> points(cloudPointCoef);  // Copie du nuage de points
 
@@ -82,6 +82,8 @@ void ExtrusionManager::updateCourbe(int i)
 			m_courbes[i].light[j]->setPosition(glm::vec3(pos.x, pos.y, 0.0f));
 		}
 	}
+
+
 
 	for (int j = 0; j < m_courbes[i].segments.size(); j++)
 	{
@@ -190,6 +192,8 @@ void ExtrusionManager::start()
     m_sb = m_pc.modelManager->allocateBuffer("../Model/cube.obj");
 	GraphiquePipeline* gp = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_wave_unlit.spv", "../Shader/vert_wave_unlit.spv");
 	GraphiquePipeline* gp_unlit = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_unlit.spv", "../Shader/vert_unlit.spv");
+	GraphiquePipeline* gp1 = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_normal.spv", "../Shader/vert_normal.spv", false);
+	
 
 
     m_pointMat = m_pc.materialManager->createMaterial();
@@ -511,7 +515,7 @@ void ExtrusionManager::update()
 		std::vector<glm::vec2> cp;
 		std::vector<int> coef;
 		std::vector<Model*> model;
-		std::vector<Model*> segement;
+		std::vector<Model*> segment;
 		std::vector<PointLight*> plight;
 		for (int i = 0; i < m_points_clouds.size(); i++)
 		{
@@ -529,9 +533,9 @@ void ExtrusionManager::update()
 		std::vector<glm::vec2> data = trianglePascal(c);
 		for (int i = 0; i < data.size()-1; i++)
 		{
-			segement.push_back(createSegment(data[i], data[i + 1]));
+			segment.push_back(createSegment(data[i], data[i + 1]));
 		}
-		c.segments = segement;
+		c.segments = segment;
 		m_points_clouds.clear();
 		m_points_light_clouds.clear();
 		c.courbetype = CourbeType::TriangleDePascal;
@@ -539,17 +543,20 @@ void ExtrusionManager::update()
 	}
 	if (m_decastelJau)
 	{
+		m_decastelJau = false;
 		Courbe c;
 		std::vector<glm::vec2> cp;
 		std::vector<int> coef;
 		std::vector<Model*> model;
-		std::vector<Model*> segement;
+		std::vector<Model*> segment;
+		std::vector<PointLight*> plight;
 		for (int i = 0; i < m_points_clouds.size(); i++)
 		{
 			glm::vec3 pos = m_points_clouds[i]->getPosition();
 			cp.push_back(glm::vec2(pos.x, pos.z));
 			coef.push_back(1);
 			model.push_back(m_points_clouds[i]);
+			plight.push_back(m_points_light_clouds[i]);
 		}
 		c.cloudPoint = cp;
 		c.coefControl = coef;
@@ -557,28 +564,29 @@ void ExtrusionManager::update()
 		c.height = 5.0f;
 		c.scale = 1.0f;
 		c.points = model;
+		c.light = plight;
 
 		std::vector<glm::vec2> data = DeCasteljau(c);
 		for (int i = 0; i < data.size() - 1; i++)
 		{
-			segement.push_back(createSegment(data[i], data[i + 1]));
+			segment.push_back(createSegment(data[i], data[i + 1]));
 		}
-		c.segments = segement;
+		c.segments = segment;
 		m_points_clouds.clear();
+		m_points_light_clouds.clear();
 		c.courbetype = CourbeType::DeCasteljau;
 		m_courbes.push_back(c);
-		m_decastelJau = false;
 	}
 
 	if (m_erase)
 	{		
 		Courbe c = m_courbes[m_listboxCurrentItem];
-		std::vector<Model*> segements = c.segments;
+		std::vector<Model*> segments = c.segments;
 		std::vector<Model*> points = c.points;
 		std::vector<PointLight*> light = c.light;
-		for (int i = 0; i < segements.size(); i++)
+		for (int i = 0; i < segments.size(); i++)
 		{
-			m_pc.modelManager->destroyModel(segements[i]);
+			m_pc.modelManager->destroyModel(segments[i]);
 		}
 		c.segments.clear();
 		for (int i = 0; i < points.size(); i++)
@@ -690,6 +698,10 @@ void ExtrusionManager::update()
 		Model* m = m_pc.modelManager->createModel(sbb);
 		Materials* mat = m_pc.materialManager->createMaterial();
 		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png",false));
+		if (m_normalShader)
+		{
+			mat->setPipeline(m_pc.graphiquePipelineManager->GetPipelines()[4]);
+		}
 		m->setMaterial(mat);
 		mat->setMetallic(0.7f);
 		mat->setRoughness(0.1f);
@@ -732,12 +744,16 @@ void ExtrusionManager::update()
 		Model* m = m_pc.modelManager->createModel(sbb);
 		//GraphiquePipeline* gp = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_normal.spv", "../Shader/vert_normal.spv",false);
 		Materials* mat = m_pc.materialManager->createMaterial();
-		//mat->setPipeline(gp);
+		if (m_normalShader)
+		{
+			mat->setPipeline(m_pc.graphiquePipelineManager->GetPipelines()[4]);
+		}
 		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
 		mat->setMetallic(0.8f);
 		mat->setRoughness(0.15f);
 		m->setMaterial(mat);
 		m_extrusionList.push_back(m);
+		
 		
 	}
 
@@ -776,13 +792,16 @@ void ExtrusionManager::update()
 
 		ShapeBuffer* sbb = m_pc.modelManager->allocateBuffer(pos, texCoords.data(), normals.data(), indices.data(), revolutionPoints.size(), indices.size());
 		Model* m = m_pc.modelManager->createModel(sbb);
-		//GraphiquePipeline* gp = m_pc.graphiquePipelineManager->createPipeline("../Shader/frag_normal.spv", "../Shader/vert_normal.spv",false);
 		Materials* mat = m_pc.materialManager->createMaterial();
-		//mat->setPipeline(gp);
+		if (m_normalShader)
+		{
+			mat->setPipeline(m_pc.graphiquePipelineManager->GetPipelines()[4]);
+		}
 		mat->setAlbedoTexture(m_pc.textureManager->createTexture("../Texture/damier.png", false));
 		mat->setMetallic(0.8f);
 		mat->setRoughness(0.15f);
 		m->setMaterial(mat);
+		m_extrusionList.push_back(m);
 	}
 
 	if (m_pas)
@@ -885,7 +904,6 @@ void ExtrusionManager::render(VulkanMisc* vM)
 		ImGui::ListBox("###Hierarchy Two", &m_listboxCurrentItemExtrusion, cExtrusionNames.data(), cExtrusionNames.size(), 5);
 		ImGui::PopItemWidth();
 		ImGui::TextColored(ImVec4(0.2f, 1, 0.2f, 1), "Inspector\n\n");
-
 		// Curves
 		if (cnames.size() > 0)
 		{
@@ -941,6 +959,8 @@ void ExtrusionManager::render(VulkanMisc* vM)
 				{
 					m_rotate = true;
 				}
+
+				ImGui::Checkbox("Normal Shader", &m_normalShader);
 
 				if (ImGui::Button("Extrusion Simple"))
 				{

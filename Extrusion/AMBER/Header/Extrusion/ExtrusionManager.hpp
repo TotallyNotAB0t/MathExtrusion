@@ -71,6 +71,8 @@ private:
 	bool m_triangleDePascale = false;
 	bool m_decastelJau = false;
 
+	bool m_normalShader = false;
+
 
 	float m_size = 0.05f;
 	int m_control_point = -1;
